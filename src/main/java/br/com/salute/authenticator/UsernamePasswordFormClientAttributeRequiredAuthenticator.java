@@ -19,38 +19,65 @@ package br.com.salute.authenticator;
 
 import java.util.Optional;
 
-import javax.ws.rs.core.Response;
-
 import org.keycloak.authentication.AuthenticationFlowContext;
-import org.keycloak.authentication.authenticators.browser.UsernamePasswordForm;
+import org.keycloak.authentication.Authenticator;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleModel;
+import org.keycloak.models.UserModel;
+import org.keycloak.models.UserModel.RequiredAction;
 import org.keycloak.services.ServicesLogger;
 
 /**
  * @author <a href="mailto:ricardoabreum@gmail.com">Ricardo Abreu Medeiros</a>
  * @version $Revision: 1 $
  */
-public class UsernamePasswordFormClientAttributeRequiredAuthenticator extends UsernamePasswordForm  {
+public class UsernamePasswordFormClientAttributeRequiredAuthenticator implements Authenticator {
+	
     protected static ServicesLogger log = ServicesLogger.LOGGER;
 
     @Override
+    public void action(AuthenticationFlowContext context) {
+    	// never called
+    }
+
+    @Override
     public void authenticate(AuthenticationFlowContext context) {
-        Response challengeResponse = context.form().createLoginPassword();
-        context.challenge(challengeResponse);
-        enableUpdateProfile(context);
-     
-        
+    	enableUpdateProfile(context);
+        context.success();
+    }
+
+    @Override
+    public boolean requiresUser() {
+        return true;
+    }
+
+    @Override
+    public boolean configuredFor(KeycloakSession session, RealmModel realm, UserModel user) {
+    	// never called
+       return true;
+    }
+
+    @Override
+    public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
+       // never called
+    }
+
+    @Override
+    public void close() {
+
     }
 
     private void enableUpdateProfile(AuthenticationFlowContext context) {
-    	
-    	Optional<RoleModel> optionalRole =  context.getAuthenticationSession().getClient().getRoles().stream().filter(e-> e.getName().equalsIgnoreCase("first_access")).findFirst();
-    	if(optionalRole.isPresent()) {
-    	 	RoleModel rm = optionalRole.get();
-			/*
-			 * if(!context.getUser().hasRole(rm)){ context.getUser().grantRole(rm);
-			 * context.getUser().addRequiredAction(RequiredAction.UPDATE_PROFILE); }
-			 */
-    	}
+
+        Optional<RoleModel> optionalRole = context.getAuthenticationSession().getClient().getRoles().stream()
+                .filter(e -> e.getName().equalsIgnoreCase("first_access")).findFirst();
+        if (optionalRole.isPresent()) {
+            RoleModel rm = optionalRole.get();
+            
+             if(!context.getUser().hasRole(rm)){ context.getUser().grantRole(rm);
+             context.getUser().addRequiredAction(RequiredAction.UPDATE_PROFILE); }
+            
+        }
     }
 }
