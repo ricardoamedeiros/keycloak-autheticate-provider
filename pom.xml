@@ -20,12 +20,12 @@
 		<version>8.0.1</version>
 	</parent>
 
-	<name>Authenticator Browser Client Required Attribute</name>
+	<name>Check for review profile in first login</name>
 	<description />
 	<modelVersion>4.0.0</modelVersion>
 
 
-	<artifactId>authenticator-browser-client-attribute</artifactId>
+	<artifactId>check-review-profile-first-login</artifactId>
 	<packaging>jar</packaging>
 
 	<dependencies>
@@ -60,7 +60,7 @@
 
 	<build>
 
-		<finalName>authenticator-browser-client-attribute</finalName>
+		<finalName>check-review-profile-first-login</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.wildfly.plugins</groupId>

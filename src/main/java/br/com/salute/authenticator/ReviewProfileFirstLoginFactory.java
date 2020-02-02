@@ -26,10 +26,10 @@ import org.keycloak.models.KeycloakSession;
  * @author <a href="mailto:ricardoabreum@gmail.com">Ricardo Abreu Medeiros</a>
  * @version $Revision: 1 $
  */
-public class UsernamePasswordFormClientAttributeRequiredFactory extends UsernamePasswordFormFactory  {
+public class ReviewProfileFirstLoginFactory extends UsernamePasswordFormFactory  {
 
-    public static final String PROVIDER_ID = "auth-client-attribute-required";
-    public static final UsernamePasswordFormClientAttributeRequiredAuthenticator SINGLETON = new UsernamePasswordFormClientAttributeRequiredAuthenticator();
+    public static final String PROVIDER_ID = "review-profile-first-login";
+    public static final ReviewProfileFirstLogin SINGLETON = new ReviewProfileFirstLogin();
     
     @Override
     public Authenticator create(KeycloakSession session) {
@@ -43,12 +43,12 @@ public class UsernamePasswordFormClientAttributeRequiredFactory extends Username
 
     @Override
     public String getDisplayType() {
-        return "Username Password Form with Client Required Attribute";
+        return "Review profile in first login by client";
     }
 
     @Override
     public String getHelpText() {
-        return "Validates a username and password from login form and request attribute by client";
+        return "Check for review profile in first login";
     }
 
 }

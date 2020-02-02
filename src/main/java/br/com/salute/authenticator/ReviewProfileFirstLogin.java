@@ -17,13 +17,12 @@
 
 package br.com.salute.authenticator;
 
-import java.util.Optional;
-
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.Authenticator;
+import org.keycloak.events.EventStoreProvider;
+import org.keycloak.events.EventType;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
-import org.keycloak.models.RoleModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.UserModel.RequiredAction;
 import org.keycloak.services.ServicesLogger;
@@ -32,19 +31,35 @@ import org.keycloak.services.ServicesLogger;
  * @author <a href="mailto:ricardoabreum@gmail.com">Ricardo Abreu Medeiros</a>
  * @version $Revision: 1 $
  */
-public class UsernamePasswordFormClientAttributeRequiredAuthenticator implements Authenticator {
+public class ReviewProfileFirstLogin implements Authenticator {
 	
     protected static ServicesLogger log = ServicesLogger.LOGGER;
 
-    @Override
-    public void action(AuthenticationFlowContext context) {
-    	// never called
+    private void enableUpdateProfile(AuthenticationFlowContext context) {
+        if (!isLoginInClientOnce(context)) {
+             context.getUser().addRequiredAction(RequiredAction.UPDATE_PROFILE); 
+        }
     }
+
+	private boolean isLoginInClientOnce(AuthenticationFlowContext context) {
+		EventStoreProvider eventStore = context.getSession().getProvider(EventStoreProvider.class);
+		return context.getRealm().isEventsEnabled() && !eventStore.createQuery()
+    			.client(context.getAuthenticationSession().getClient().getClientId()) //clientId
+    			.realm(context.getRealm().getId()) //realm
+    			.user(context.getUser().getId())	//user
+    			.type(EventType.LOGIN)				//EventType
+    			.firstResult(0).maxResults(1).getResultList().isEmpty();
+	}
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
     	enableUpdateProfile(context);
         context.success();
+    }
+    
+    @Override
+    public void action(AuthenticationFlowContext context) {
+    	// never called
     }
 
     @Override
@@ -68,16 +83,5 @@ public class UsernamePasswordFormClientAttributeRequiredAuthenticator implements
 
     }
 
-    private void enableUpdateProfile(AuthenticationFlowContext context) {
-
-        Optional<RoleModel> optionalRole = context.getAuthenticationSession().getClient().getRoles().stream()
-                .filter(e -> e.getName().equalsIgnoreCase("first_access")).findFirst();
-        if (optionalRole.isPresent()) {
-            RoleModel rm = optionalRole.get();
-            
-             if(!context.getUser().hasRole(rm)){ context.getUser().grantRole(rm);
-             context.getUser().addRequiredAction(RequiredAction.UPDATE_PROFILE); }
-            
-        }
-    }
+    
 }
